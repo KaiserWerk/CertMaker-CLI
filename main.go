@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"flag"
 	"fmt"
@@ -132,7 +134,11 @@ func main() {
 			}
 
 			if *auth != "" {
-				// set to different value or stop
+				for _, v := range authEntries {
+					if v.Name == *auth {
+						currentAuth = v
+					}
+				}
 			}
 
 			cache, err := certmaker.NewCache()
@@ -210,23 +216,69 @@ func main() {
 			os.Exit(0)
 		case "csr":
 			csrFlagSet := flag.NewFlagSet("csr", flag.ContinueOnError)
+			auth := csrFlagSet.String("auth", "", "the authentication entry to use (optional)")
 			csrFile := csrFlagSet.String("file", "", "the CSR file")
 			csrOutputDir := csrFlagSet.String("out", ".", "the output directory")
 			err = csrFlagSet.Parse(os.Args[2:])
 			if err == nil {
-				fmt.Println("it's a csr")
-				fmt.Println("csr file:", *csrFile)
-				fmt.Println("out:", *csrOutputDir)
+				if *csrFile == "" {
+					fmt.Println("missing CSR file")
+					os.Exit(-1)
+				}
 			} else {
 				fmt.Println("csr error:", err)
+				os.Exit(-1)
 			}
+
+			data, err := os.ReadFile(*csrFile)
+			if err != nil {
+				fmt.Println("could not read CSR file:", err.Error())
+				os.Exit(-1)
+			}
+
+			if *auth != "" {
+				for _, v := range authEntries {
+					if v.Name == *auth {
+						currentAuth = v
+					}
+				}
+			}
+
+			cache, err := certmaker.NewCache()
+			if err != nil {
+				fmt.Println("NewCache error:", err.Error())
+				os.Exit(-1)
+			}
+			client := certmaker.NewClient(currentAuth.BaseURL, currentAuth.Token, nil)
+
+			b, _ := pem.Decode(data)
+			csr, _ := x509.ParseCertificateRequest(b.Bytes)
+			err = client.RequestWithCSR(cache, csr)
+			if err != nil {
+				fmt.Println("certificate request with CSR not successful:", err.Error())
+				os.Exit(-1)
+			}
+
+			fmt.Println("certificate successfully obtained!")
+
+			err = os.Rename(cache.GetCertificatePath(), filepath.Join(*csrOutputDir, "cert.pem"))
+			if err != nil {
+				fmt.Printf("could not move certificate file to output directory: %s\n", err.Error())
+				os.Exit(-1)
+			}
+			err = os.Rename(cache.GetPrivateKeyPath(), filepath.Join(*csrOutputDir, "key.pem"))
+			if err != nil {
+				fmt.Printf("could not move private key file to output directory: %s\n", err.Error())
+				os.Exit(-1)
+			}
+			fmt.Println("moved to output directory!")
 		default:
 			fmt.Printf("unknown command '%s'\n", subCommand)
 			os.Exit(-1)
 		}
 	}
-	
-	fmt.Println("is interactive session")
+
+	fmt.Println("is interactive session; not implemented yet")
 	//
 	//// TODO: set up flags!
 	//authEntries, err = setupAuthConfig()
