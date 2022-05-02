@@ -30,14 +30,18 @@ var (
 )
 
 var (
-	cacheDir string
-	//err         error
+	AppVersion  = "v0.0.0"
+	cacheDir    string
 	authEntries []*AuthEntry
 	currentAuth *AuthEntry
-	//loginN      = regexp.MustCompile("login [0-9]+")
 )
 
 func main() {
+	if os.Args[1] == "version" {
+		fmt.Println(AppVersion)
+		os.Exit(0)
+	}
+
 	c, err := os.UserCacheDir()
 	if err != nil {
 		fmt.Println("could not determine app cache directory:", err.Error())
@@ -56,6 +60,7 @@ func main() {
 			fmt.Println("Note: no authentication entries found")
 		} else {
 			fmt.Println("An error occurred while setting up the authentication entries:", err.Error())
+			os.Exit(-1)
 		}
 	}
 

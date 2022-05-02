@@ -1,4 +1,6 @@
 .idea
+.certs
+build
 
 *.log
 *.exe
