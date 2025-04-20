@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,13 +17,8 @@ var (
 
 func main() {
 
-	if len(os.Args) < 2 {
-		fmt.Println("no arguments provided")
-		os.Exit(-1)
-	}
-
 	// print version and exit
-	if os.Args[1] == "version" {
+	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Println(AppVersion)
 		return
 	}
@@ -36,36 +30,33 @@ func main() {
 		os.Exit(-1)
 	}
 
-	cacheDir = filepath.Join(c, "certctl")
+	cacheDir := filepath.Join(c, "certctl")
 	_ = os.MkdirAll(cacheDir, 0644)
 
 	authFile := filepath.Join(cacheDir, ".auth")
 
-	isInteractive := false
-	if len(os.Args) == 2 && os.Args[1] == "interactive" {
-		isInteractive = true
+	isInteractive := true
+	if len(os.Args) > 1 {
+		isInteractive = false
 	}
 
 	authenticator := newAuthenticator(authFile)
-	err = authenticator.get()
-	if err != nil {
-		if errors.Is(err, ErrNoAuthFound) {
-			fmt.Println("No authentication entries found; please authenticate.")
-			return
-		} else {
-			fmt.Println(err.Error()) // debug
-			fmt.Println("An error occurred while fetching authentication info; please authenticate.")
+
+	if isInteractive {
+		err = startInteractiveMode(authenticator)
+		if err != nil {
+			fmt.Println("interactive mode error:", err.Error())
+			os.Exit(-1)
+
+		}
+	} else {
+		err = startNonInteractiveMode(authenticator, os.Args)
+		if err != nil {
+			fmt.Println("non-interactive mode error:", err.Error())
 			os.Exit(-1)
 		}
 	}
 
-	if isInteractive {
-		err = startInteractiveMode(authenticator)
-	} else {
-		err = startNonInteractiveMode(authenticator)
-	}
-
-	fmt.Println("is interactive session; not implemented yet")
 	//
 	//// TODO: set up flags!
 	//authEntries, err = setupAuthConfig()
@@ -73,7 +64,7 @@ func main() {
 	//	fmt.Println()
 	//}
 
-	//pterm.DefaultCenter.Print(pterm.DefaultHeader.WithFullWidth().WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Sprint("CertMaker Command Line Interface"))
+	//pterm.DefaultCenter.Print(pterm.DefaultHeader.WithFullWidth().WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Sprint("CertMaker CLI"))
 	//pterm.Info.Println("This is the CertMaker Command Line Interface or " + pterm.LightMagenta(appName) + " in short!" +
 	//	"\nThe CLI allows you to easily obtain certificates from a running CertMaker" +
 	//	"\ninstance and revoking is just as easy!" +
