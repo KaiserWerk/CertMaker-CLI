@@ -4,8 +4,11 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"os"
 
+	"github.com/KaiserWerk/CertMaker-CLI/auth"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +18,15 @@ var authremoveCmd = &cobra.Command{
 	Short: "Removes authentication credentials",
 	Long:  `The auth remove command allows users to remove authentication credentials.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("auth remove called")
+		if err := auth.Remove(); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(cmd.OutOrStdout(), "nothing to remove")
+			} else {
+				fmt.Fprintln(cmd.OutOrStderr(), "error removing credentials:", err)
+			}
+			return
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), "credentials removed")
 	},
 }
 

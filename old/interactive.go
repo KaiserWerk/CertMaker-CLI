@@ -15,14 +15,14 @@ func startInteractiveMode(auth *authenticator) error {
 	if err := auth.load(); err != nil {
 		for !auth.isAuthenticated() {
 			auth.info = askForAuth()
-			if err := auth.set(auth.info.BaseURL, auth.info.Token); err != nil {
+			if err := auth.set(auth.info.InstanceURL, auth.info.Token); err != nil {
 				return err
 			}
 		}
 	}
 
 	pterm.Info.Println("Current auth:")
-	pterm.Info.Println("  " + auth.info.BaseURL)
+	pterm.Info.Println("  " + auth.info.InstanceURL)
 	pterm.Info.Println("  " + auth.info.Token)
 	pterm.Println()
 
@@ -90,8 +90,8 @@ func askForAuth() *authInfo {
 	u := askForString("Please enter the base URL of the CertMaker instance:", false)
 	k := askForString("Please enter the token for the CertMaker instance:", false)
 	return &authInfo{
-		BaseURL: u,
-		Token:   k,
+		InstanceURL: u,
+		Token:       k,
 	}
 }
 

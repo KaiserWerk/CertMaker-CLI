@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/KaiserWerk/CertMaker-CLI/auth"
 )
 
 var (
@@ -20,7 +22,11 @@ var authaddCmd = &cobra.Command{
 	Short: "Adds authentication credentials",
 	Long:  `The auth add command allows users to add authentication credentials to be used by 'cm'.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("auth add called")
+		if err := auth.Set(instance, apiToken); err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error adding credentials:", err)
+			return
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), "credentials added")
 	},
 }
 
