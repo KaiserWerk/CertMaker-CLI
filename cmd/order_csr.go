@@ -4,7 +4,10 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -17,10 +20,24 @@ var (
 var csrCmd = &cobra.Command{
 	Use:   "csr",
 	Short: "Orders a certificate using a CSR",
-	Long: `Order a new certificate from the CertMaker instance using a Certificate Signing Request (CSR), meaning you provide a CSR file
-that contains the necessary information about the certificate.`,
+	Long:  `Order a new certificate from the CertMaker instance using a Certificate Signing Request (CSR), which contains the necessary information about the desired certificate.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("csr called")
+		cont, err := os.ReadFile(csrfile)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error reading CSR file:", err)
+			return
+		}
+
+		block, _ := pem.Decode(cont)
+		if block == nil || block.Type != "CERTIFICATE REQUEST" {
+			fmt.Fprintln(cmd.OutOrStderr(), "failed to decode PEM block containing CSR or none found")
+			return
+		}
+		_, err = x509.ParseCertificateRequest(block.Bytes)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error parsing CSR:", err)
+			return
+		}
 	},
 }
 

@@ -82,3 +82,7 @@ func getHomeDir() string {
 
 	return filepath.Join(homedir, "KaiserWerk", "CertMaker-CLI")
 }
+
+func InstanceURL() string {
+	return auth.InstanceURL
+}
