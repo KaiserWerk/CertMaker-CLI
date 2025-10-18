@@ -24,14 +24,10 @@ func (c *HTTP01ChallengeSolver) CanSolve(challengeType string) bool {
 }
 
 func (c *HTTP01ChallengeSolver) Setup(ctx context.Context, token string, domains []string) error {
-	if len(domains) == 0 {
-		return ErrNoDomainsProvided
-	}
-
 	// serve the token on the challenge port under the well-known path
 	router := http.NewServeMux()
 	router.HandleFunc(wellKnownPath2, func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(token))
+		_, _ = w.Write([]byte(token))
 	})
 
 	server := &http.Server{

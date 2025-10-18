@@ -16,3 +16,22 @@ type Solver interface {
 	// used for cleanup after the challenge is solved.
 	Solve(ctx context.Context, instanceURL, challengeID string, setHeader func(*http.Request)) (*entity.CertificateResponse, error)
 }
+
+func normalizeDomains(domains []string) []string {
+	// there might be wildcard domains, we need to normalize them by removing the "*." prefix
+	// also no double entries allowed
+	normalized := make([]string, len(domains))
+	seen := make(map[string]struct{})
+	idx := 0
+	for _, domain := range domains {
+		if len(domain) >= 2 && domain[0:2] == "*." {
+			domain = domain[2:]
+		}
+		if _, exists := seen[domain]; !exists {
+			seen[domain] = struct{}{}
+			normalized[idx] = domain
+			idx++
+		}
+	}
+	return normalized[:idx]
+}

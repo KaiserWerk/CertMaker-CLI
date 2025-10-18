@@ -18,7 +18,12 @@ func (d *DNSChallengeSolver) CanSolve(challengeType string) bool {
 }
 
 func (d *DNSChallengeSolver) Setup(ctx context.Context, token string, domains []string) error {
-	// display the token and domains (with subdomains) to the user with the
+	if len(domains) == 0 {
+		return ErrNoDomainsProvided
+	}
+	domains = normalizeDomains(domains)
+
+	// display the token and domains (with the certmaker subdomains) to the user with the
 	// instructions to create the necessary DNS TXT records.
 	// the token is the same for all domains.
 	fmt.Println("To complete the DNS-01 challenge, please create the following DNS TXT records:")

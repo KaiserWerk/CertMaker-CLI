@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/KaiserWerk/CertMaker-CLI/key"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +25,41 @@ var genKeyCmd = &cobra.Command{
 		"cm gen key --algo rsa --bits 2048 --keyfile /path/to/key.pem\n" +
 		"cm gen key --algo ed25519 --keyfile /path/to/key.pem",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("keyfile called")
+		var (
+			privKey []byte
+			err     error
+		)
+		switch algo {
+		case "rsa":
+			privKey, err = key.NewRSA(bits)
+			if err != nil {
+				fmt.Fprintf(cmd.OutOrStderr(), "Error generating RSA key: %v\n", err)
+				return
+			}
+		case "ecdsa":
+			privKey, err = key.NewECDSA(bits)
+			if err != nil {
+				fmt.Fprintf(cmd.OutOrStderr(), "Error generating ECDSA key: %v\n", err)
+				return
+			}
+		case "ed25519":
+			privKey, err = key.NewEd25519()
+			if err != nil {
+				fmt.Fprintf(cmd.OutOrStderr(), "Error generating Ed25519 key: %v\n", err)
+				return
+			}
+		default:
+			fmt.Fprintf(cmd.OutOrStderr(), "Unsupported algorithm: %s\n", algo)
+			return
+		}
+
+		err = os.WriteFile(keyfile, privKey, 0600)
+		if err != nil {
+			fmt.Fprintf(cmd.OutOrStderr(), "Error writing key to file: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(cmd.OutOrStdout(), "Private key generated and saved to %s\n", keyfile)
 	},
 }
 
@@ -31,7 +67,7 @@ func init() {
 	genCmd.AddCommand(genKeyCmd)
 
 	genKeyCmd.Flags().StringVar(&algo, "algo", "rsa", "The algorithm to use for key generation. Valid values are: rsa, ecdsa, ed25519")
-	genKeyCmd.Flags().IntVar(&bits, "bits", 2048, "The key size in bits (for RSA: multiples of 1,024; for ECDSA: 256, 384, 521, ignored for Ed25519)")
+	genKeyCmd.Flags().IntVar(&bits, "bits", 2048, "The key size in bits (for RSA: multiples of 1,024; for ECDSA: 224, 256, 384, 521, ignored for Ed25519)")
 	genKeyCmd.Flags().StringVar(&keyfile, "keyfile", "", "Path to save the generated private key file (PEM format)")
 	genKeyCmd.MarkFlagRequired("keyfile")
 
