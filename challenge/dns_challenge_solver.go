@@ -10,14 +10,14 @@ import (
 	"github.com/KaiserWerk/CertMaker-CLI/entity"
 )
 
-type DNSChallengeSolver struct {
+type DNS01ChallengeSolver struct {
 }
 
-func (d *DNSChallengeSolver) CanSolve(challengeType string) bool {
+func (d *DNS01ChallengeSolver) CanSolve(challengeType string) bool {
 	return challengeType == "dns-01"
 }
 
-func (d *DNSChallengeSolver) Setup(ctx context.Context, token string, domains []string) error {
+func (d *DNS01ChallengeSolver) Setup(ctx context.Context, token string, domains []string) error {
 	if len(domains) == 0 {
 		return ErrNoDomainsProvided
 	}
@@ -38,7 +38,7 @@ func (d *DNSChallengeSolver) Setup(ctx context.Context, token string, domains []
 	return nil
 }
 
-func (d *DNSChallengeSolver) Solve(ctx context.Context, instanceURL, challengeID string, setHeader func(*http.Request)) (*entity.CertificateResponse, error) {
+func (d *DNS01ChallengeSolver) Solve(ctx context.Context, instanceURL, challengeID string, setHeader func(*http.Request)) (*entity.CertificateResponse, error) {
 	solveURL := fmt.Sprintf("%s/api/v1/dns-01/%s/solve", instanceURL, challengeID)
 
 	httpClient := &http.Client{Timeout: 1 * time.Minute}
