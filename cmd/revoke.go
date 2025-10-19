@@ -30,7 +30,7 @@ func init() {
 
 	revokeCmd.Flags().StringVar(&sn, "sn", "", "Serial number of the certificate to be revoked (hexadecimal, e.g., '01ab23cd'). If the --certfile flag is supplied as well, it is used instead.")
 	revokeCmd.Flags().StringVar(&certfile, "certfile", "", "The path to the certificate file in PEM-Format. If the --sn flag is supplied as well, it is ignored.")
-	revokeCmd.Flags().StringVar(&reason, "reason", "unspecified", "The reason for revocation. Valid values are: unspecified, keyCompromise, CACompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, removeFromCRL, privilegeWithdrawn, AACompromise. Default is 'unspecified'")
+	revokeCmd.Flags().StringVar(&reason, "reason", "unspecified", "The reason for revocation. Valid values are: unspecified, keyCompromise, CACompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, removeFromCRL, privilegeWithdrawn, AACompromise.")
 	revokeCmd.MarkFlagsMutuallyExclusive("sn", "certfile")
 	revokeCmd.MarkFlagsOneRequired("sn", "certfile")
 
