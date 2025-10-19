@@ -18,7 +18,8 @@ var (
 var revokeCmd = &cobra.Command{
 	Use:   "revoke",
 	Short: "Revokes a certificate",
-	Long:  `Revoke a certificate. This command will communicate with the CertMaker instance to perform the revocation. You can only revoke certificates that were issued to you.`,
+	Long: `Revokes a certificate. This command will communicate with the CertMaker instance to perform the revocation. 
+You can only revoke certificates that were issued to you. The --certfile flag takes precedence over the --sn flag if both are provided.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(cmd.OutOrStdout(), "revoke: not implemented yet")
 	},
@@ -27,8 +28,8 @@ var revokeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(revokeCmd)
 
-	revokeCmd.Flags().StringVar(&sn, "sn", "", "Serial number of the certificate to be revoked (hexadecimal, e.g., '01ab23cd')")
-	revokeCmd.Flags().StringVar(&certfile, "certfile", "", "The path to the certificate file in PEM-Format")
+	revokeCmd.Flags().StringVar(&sn, "sn", "", "Serial number of the certificate to be revoked (hexadecimal, e.g., '01ab23cd'). If the --certfile flag is supplied as well, it is used instead.")
+	revokeCmd.Flags().StringVar(&certfile, "certfile", "", "The path to the certificate file in PEM-Format. If the --sn flag is supplied as well, it is ignored.")
 	revokeCmd.Flags().StringVar(&reason, "reason", "unspecified", "The reason for revocation. Valid values are: unspecified, keyCompromise, CACompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, removeFromCRL, privilegeWithdrawn, AACompromise. Default is 'unspecified'")
 	revokeCmd.MarkFlagsMutuallyExclusive("sn", "certfile")
 	revokeCmd.MarkFlagsOneRequired("sn", "certfile")
