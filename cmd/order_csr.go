@@ -41,11 +41,17 @@ var csrCmd = &cobra.Command{
 			return
 		}
 
-		certData, err := client.RequestCertificateWithCSR(cont, days, challengeType)
+		certData, err := client.RequestCertificateWithCSR(block.Bytes, days, challengeType)
 		if err != nil {
 			fmt.Fprintln(cmd.OutOrStderr(), "error requesting certificate:", err)
 			return
 		}
+
+		block = &pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: certData,
+		}
+		certData = pem.EncodeToMemory(block)
 
 		err = os.WriteFile(certfile, certData, 0644)
 		if err != nil {
@@ -61,7 +67,7 @@ func init() {
 	orderCmd.AddCommand(csrCmd)
 
 	csrCmd.Flags().StringVar(&csrfile, "csrfile", "", "Path to the CSR file")
-
+	csrCmd.Flags().StringVar(&certfile, "certfile", "", "Path where the certificate should be stored")
 	csrCmd.MarkFlagRequired("csrfile")
 
 	// Here you will define your flags and configuration settings.

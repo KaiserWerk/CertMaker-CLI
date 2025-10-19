@@ -109,7 +109,7 @@ func loadPrivateKeyFromFile(path string) (crypto.Signer, x509.SignatureAlgorithm
 			return k, x509.SHA256WithRSA, nil
 		case *ecdsa.PrivateKey:
 			return k, x509.ECDSAWithSHA256, nil
-		case *ed25519.PrivateKey:
+		case ed25519.PrivateKey:
 			return k, x509.PureEd25519, nil
 		}
 	case "RSA PRIVATE KEY":

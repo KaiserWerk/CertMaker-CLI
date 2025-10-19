@@ -4,6 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/pem"
 	"fmt"
 	"os"
 
@@ -52,6 +53,12 @@ var genKeyCmd = &cobra.Command{
 			fmt.Fprintf(cmd.OutOrStderr(), "Unsupported algorithm: %s\n", algo)
 			return
 		}
+
+		block := &pem.Block{
+			Type:  "PRIVATE KEY",
+			Bytes: privKey,
+		}
+		privKey = pem.EncodeToMemory(block)
 
 		err = os.WriteFile(keyfile, privKey, 0600)
 		if err != nil {

@@ -24,6 +24,7 @@ var (
 
 func RequestCertificateWithCSR(csr []byte, days int, challengeType string) ([]byte, error) {
 	// TODO: days is currently unused
+
 	req, _ := http.NewRequest(http.MethodPost, auth.InstanceURL()+"/api/v1/certificate/request-with-csr", bytes.NewBuffer(csr))
 	auth.SetAuthHeader(req)
 
@@ -39,7 +40,8 @@ func RequestCertificateWithCSR(csr []byte, days int, challengeType string) ([]by
 		if err := json.NewDecoder(resp.Body).Decode(&certResp); err != nil {
 			return nil, err
 		}
-		return []byte(certResp.CertificatePEM), nil
+		certBytes, _ := base64.StdEncoding.DecodeString(certResp.CertificatePEM)
+		return certBytes, nil
 		// certificate was issued without a challenge, return it
 	case http.StatusAccepted:
 		// a challenge needs to be solved
@@ -94,7 +96,8 @@ func RequestCertificateWithCSR(csr []byte, days int, challengeType string) ([]by
 			return nil, fmt.Errorf("failed to solve challenge: %w", err)
 		}
 
-		return []byte(certResp.CertificatePEM), nil
+		certBytes, _ := base64.StdEncoding.DecodeString(certResp.CertificatePEM)
+		return certBytes, nil
 	case http.StatusUnauthorized:
 		// authentication failed
 		return nil, fmt.Errorf("authentication failed")
