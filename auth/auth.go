@@ -29,6 +29,10 @@ var (
 	currentFile string
 )
 
+func Ok() bool {
+	return auth.InstanceURL != "" && auth.Token != ""
+}
+
 func Load(file string) error {
 	currentFile = file
 	cont, err := os.ReadFile(file)
@@ -69,7 +73,7 @@ func Remove() error {
 }
 
 func SetAuthHeader(r *http.Request) {
-	r.Header.Set("X-Api-Token", auth.Token)
+	r.Header.Set("X-Auth-Token", auth.Token)
 }
 
 func getHomeDir() string {

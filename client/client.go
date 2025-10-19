@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -23,7 +24,7 @@ var (
 
 func RequestCertificateWithCSR(csr []byte, days int, challengeType string) ([]byte, error) {
 	// TODO: days is currently unused
-	req, _ := http.NewRequest(http.MethodPost, auth.InstanceURL()+"/certificate/request-with-csr", bytes.NewBuffer(csr))
+	req, _ := http.NewRequest(http.MethodPost, auth.InstanceURL()+"/api/v1/certificate/request-with-csr", bytes.NewBuffer(csr))
 	auth.SetAuthHeader(req)
 
 	resp, err := httpClient.Do(req)
@@ -118,23 +119,28 @@ func RequestCertificateWithSimpleRequest(domains []string, ips []string, emails 
 	if err := json.NewEncoder(&b).Encode(sr); err != nil {
 		return nil, nil, err
 	}
-	req, _ := http.NewRequest(http.MethodPost, auth.InstanceURL()+"/certificate/request-with-simple-request", &b)
+	req, _ := http.NewRequest(http.MethodPost, auth.InstanceURL()+"/api/v1/certificate/request-with-simplerequest", &b)
 	auth.SetAuthHeader(req)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
+		fmt.Println("err:", err)
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusCreated:
+		//certificate was issued immediately, return it
+
 		var certResp entity.CertificateResponse
 		if err := json.NewDecoder(resp.Body).Decode(&certResp); err != nil {
 			return nil, nil, err
 		}
-		return []byte(certResp.CertificatePEM), nil, nil
-		//certificate was issued immediately, return it
+		//fmt.Printf("cert response: %+v\n", certResp)
+		certData, _ := base64.StdEncoding.DecodeString(certResp.CertificatePEM)
+		keyData, _ := base64.StdEncoding.DecodeString(certResp.PrivateKeyPEM)
+		return certData, keyData, nil
 	case http.StatusAccepted:
 		// a challenge needs to be solved
 
@@ -175,13 +181,15 @@ func RequestCertificateWithSimpleRequest(domains []string, ips []string, emails 
 			return nil, nil, fmt.Errorf("failed to solve challenge: %w", err)
 		}
 
-		return []byte(certResp.CertificatePEM), []byte(certResp.PrivateKeyPEM), nil
+		certData, _ := base64.StdEncoding.DecodeString(certResp.CertificatePEM)
+		keyData, _ := base64.StdEncoding.DecodeString(certResp.PrivateKeyPEM)
+		return certData, keyData, nil
 	case http.StatusUnauthorized:
 		// authentication failed, user should do re-auth
 		return nil, nil, fmt.Errorf("authentication failed")
 	case http.StatusBadRequest:
 		// bad request, possibly encoding or format error
-		return nil, nil, fmt.Errorf("bad request, possibly invalid CSR")
+		return nil, nil, fmt.Errorf("bad request: %s", resp.Status)
 	default:
 		// some other error
 		return nil, nil, fmt.Errorf("unexpected server response: %s", resp.Status)

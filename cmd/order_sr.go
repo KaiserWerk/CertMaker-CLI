@@ -4,9 +4,11 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/pem"
 	"fmt"
 	"os"
 
+	"github.com/KaiserWerk/CertMaker-CLI/auth"
 	"github.com/KaiserWerk/CertMaker-CLI/client"
 
 	"github.com/spf13/cobra"
@@ -30,11 +32,22 @@ the domain names, IP addresses, email addresses and the desired validity period 
 	Example: `cm order sr --domains example.com,myhost.local --domains newapp.com --ips 192.0.2.1,8.4.1.155 --emails user@example.com --ips 88.77.11.22 --certfile /path/to/cert.pem --keyfile /path/to/key.pem --days 30`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		if !auth.Ok() {
+			fmt.Fprintln(cmd.OutOrStderr(), "not authenticated, please run 'cm auth add' first")
+			return
+		}
+
 		certData, keyData, err := client.RequestCertificateWithSimpleRequest(domains, ips, emails, days, challengeType)
 		if err != nil {
 			fmt.Fprintln(cmd.OutOrStderr(), "error requesting certificate:", err)
 			return
 		}
+
+		block := &pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: certData,
+		}
+		certData = pem.EncodeToMemory(block)
 
 		err = os.WriteFile(certfile, certData, 0644)
 		if err != nil {
@@ -43,6 +56,12 @@ the domain names, IP addresses, email addresses and the desired validity period 
 		}
 
 		fmt.Fprintln(cmd.OutOrStdout(), "Certificate successfully ordered and saved to", certfile)
+
+		block = &pem.Block{
+			Type:  "PRIVATE KEY",
+			Bytes: keyData,
+		}
+		keyData = pem.EncodeToMemory(block)
 
 		err = os.WriteFile(keyfile, keyData, 0600)
 		if err != nil {
