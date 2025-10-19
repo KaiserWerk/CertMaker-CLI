@@ -20,7 +20,7 @@ var revokeCmd = &cobra.Command{
 	Short: "Revokes a certificate",
 	Long:  `Revoke a certificate. This command will communicate with the CertMaker instance to perform the revocation. You can only revoke certificates that were issued to you.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("revoke called")
+		fmt.Fprintln(cmd.OutOrStdout(), "revoke: not implemented yet")
 	},
 }
 

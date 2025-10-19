@@ -19,7 +19,7 @@ var checkCmd = &cobra.Command{
 	Short: "Checks the validity of a certificate",
 	Long:  `Check whether a given certificate is valid by verifying its signature, expiration date, and optionally its revocation status.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("check called")
+		fmt.Fprintln(cmd.OutOrStdout(), "check: not implemented yet")
 	},
 }
 

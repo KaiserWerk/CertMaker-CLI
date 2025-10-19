@@ -15,7 +15,7 @@ var authCmd = &cobra.Command{
 	Short: "Provides authentication functionalities",
 	Long:  `The auth command allows users to add and remove authentication credentials to be used for outgoing requests`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("auth called")
+		fmt.Fprintln(cmd.OutOrStdout(), "auth: what am I supposed to do?")
 	},
 }
 

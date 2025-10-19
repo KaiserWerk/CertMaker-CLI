@@ -5,6 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/KaiserWerk/CertMaker-CLI/client"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +29,28 @@ var srCmd = &cobra.Command{
 the domain names, IP addresses, email addresses and the desired validity period in days.`,
 	Example: `cm order sr --domains example.com,myhost.local --domains newapp.com --ips 192.0.2.1,8.4.1.155 --emails user@example.com --ips 88.77.11.22 --certfile /path/to/cert.pem --keyfile /path/to/key.pem --days 30`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("sr called")
+
+		certData, keyData, err := client.RequestCertificateWithSimpleRequest(domains, ips, emails, days, challengeType)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error requesting certificate:", err)
+			return
+		}
+
+		err = os.WriteFile(certfile, certData, 0644)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error writing certificate to file:", err)
+			return
+		}
+
+		fmt.Fprintln(cmd.OutOrStdout(), "Certificate successfully ordered and saved to", certfile)
+
+		err = os.WriteFile(keyfile, keyData, 0600)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error writing private key to file:", err)
+			return
+		}
+
+		fmt.Fprintln(cmd.OutOrStdout(), "Private key successfully saved to", keyfile)
 	},
 }
 
@@ -38,7 +62,7 @@ func init() {
 	srCmd.Flags().StringSliceVar(&emails, "emails", nil, "Comma-separated list of email addresses. Multiple use allowed.")
 	srCmd.Flags().StringVar(&certfile, "certfile", "", "Path to save the issued certificate (PEM format)")
 	srCmd.Flags().StringVar(&keyfile, "keyfile", "", "Path to save the issued private key (PEM format)")
-	srCmd.Flags().IntVar(&days, "days", 7, "Number of days the certificate should be valid for (1-182 days, default 7)")
+
 	srCmd.MarkFlagsOneRequired("domains", "ips", "emails")
 	srCmd.MarkFlagRequired("certfile")
 	srCmd.MarkFlagRequired("keyfile")

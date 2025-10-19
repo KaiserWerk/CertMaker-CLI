@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/KaiserWerk/CertMaker-CLI/client"
+
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +40,20 @@ var csrCmd = &cobra.Command{
 			fmt.Fprintln(cmd.OutOrStderr(), "error parsing CSR:", err)
 			return
 		}
+
+		certData, err := client.RequestCertificateWithCSR(cont, days, challengeType)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error requesting certificate:", err)
+			return
+		}
+
+		err = os.WriteFile(certfile, certData, 0644)
+		if err != nil {
+			fmt.Fprintln(cmd.OutOrStderr(), "error writing certificate to file:", err)
+			return
+		}
+
+		fmt.Fprintln(cmd.OutOrStdout(), "Certificate successfully ordered and saved to", certfile)
 	},
 }
 
@@ -45,7 +61,7 @@ func init() {
 	orderCmd.AddCommand(csrCmd)
 
 	csrCmd.Flags().StringVar(&csrfile, "csrfile", "", "Path to the CSR file")
-	csrCmd.Flags().IntVar(&days, "days", 7, "Number of days the certificate should be valid for (1-182 days, default 7)")
+
 	csrCmd.MarkFlagRequired("csrfile")
 
 	// Here you will define your flags and configuration settings.

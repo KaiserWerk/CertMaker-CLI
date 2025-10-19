@@ -16,7 +16,7 @@ var genCmd = &cobra.Command{
 	Long:    `The gen command is a parent command for generating private keys and Certificate Signing Requests (CSRs).`,
 	Example: "cm gen key --algo rsa --bits 8192 --keyfile /opt/mykey.pem",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gen called")
+		fmt.Fprintln(cmd.OutOrStdout(), "gen: what am I supposed to generate?")
 	},
 }
 
