@@ -2,7 +2,10 @@ module github.com/KaiserWerk/CertMaker-CLI
 
 go 1.25.1
 
-require github.com/spf13/cobra v1.10.1
+require (
+	github.com/spf13/cobra v1.10.1
+	golang.org/x/crypto v0.43.0
+)
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

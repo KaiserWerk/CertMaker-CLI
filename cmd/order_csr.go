@@ -69,6 +69,7 @@ func init() {
 	csrCmd.Flags().StringVar(&csrfile, "csrfile", "", "Path to the CSR file")
 	csrCmd.Flags().StringVar(&certfile, "certfile", "", "Path where the certificate should be stored")
 	csrCmd.MarkFlagRequired("csrfile")
+	csrCmd.MarkFlagRequired("certfile")
 
 	// Here you will define your flags and configuration settings.
 

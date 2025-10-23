@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ocsp bool
+	ocspCheck bool
 )
 
 // checkCmd represents the check command
@@ -28,7 +28,7 @@ func init() {
 	rootCmd.AddCommand(checkCmd)
 
 	checkCmd.Flags().StringVar(&certfile, "certfile", "", "Path to the certificate file")
-	checkCmd.Flags().BoolVar(&ocsp, "ocsp", false, "Check revocation status using the OCSP responder of the CertMaker instance")
+	checkCmd.Flags().BoolVar(&ocspCheck, "ocsp", false, "Check revocation status using the OCSP responder of the CertMaker instance")
 	checkCmd.MarkFlagRequired("certfile")
 
 	// Here you will define your flags and configuration settings.
