@@ -1,7 +1,7 @@
 .idea
 .certs
-build
+build/
 
-*.log
-*.exe
-*.pem
+**/*.log
+**/*.exe
+**/*.pem
