@@ -1,6 +1,15 @@
+$version = git describe --tags --abbrev=0
+if ($LASTEXITCODE -ne 0) {
+    throw "Git-Tag konnte nicht ermittelt werden."
+}
+
+$version = $version.Trim()
+if (-not $version) {
+    throw "Git hat einen leeren Tag zurückgegeben."
+}
+
 $sourcecode = "main.go"
-$target = "build\cm"
-$version = "v0.0.1-alpha"
+$target = "build\cmctl"
 
 # Linux, 64-bit
 $env:GOOS = 'linux';   $env:GOARCH = 'amd64';             go build -o "$($target)-linux64"   -ldflags "-s -w -X 'main.AppVersion=$($version)'" $sourcecode
